@@ -1,5 +1,3 @@
-package zander.requestapi;
-
 public class RequestBuilder {
     private String url;
     private Request.Method requestMethod;
