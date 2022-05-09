@@ -1,3 +1,5 @@
+package io.github.ModularEnigma;
+
 public class RequestBuilder {
     private String url;
     private Request.Method requestMethod;
