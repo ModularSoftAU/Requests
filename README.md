@@ -14,9 +14,9 @@ However, for Maven at a glanc, add this to your `pom.xml`:
         <dependency>
             <groupId>io.github.ModularEnigma</groupId>
             <artifactId>Requests</artifactId>
-            <version>{version}</version>
+            <version>{$version}</version>
         </dependency>
     </dependencies>
 ```
 
-Where `{version}` is replaced with the lastest version of Requests.
+Where `{$version}` is replaced with the blue version text from the badge above.
