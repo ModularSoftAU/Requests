@@ -1,9 +1,35 @@
 package io.github.ModularEnigma;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class RequestBuilder {
     private String url;
     private Request.Method requestMethod;
     private String requestBody;
+    private final Map<String, String> headers;
+
+    public RequestBuilder() {
+        headers = new HashMap<>();
+    }
+
+    /**
+     * Add a header to the request. Note: Accept and Content-Type are already set to use JSON.
+     *
+     * @param header Header to set
+     * @param value Value of the header
+     * @return {@link RequestBuilder}
+     * @throws IllegalArgumentException If the header or value is null
+     */
+    public RequestBuilder addHeader(String header, String value) {
+        if (header == null) {
+            throw new IllegalArgumentException("Header cannot be null.");
+        } else if (value == null) {
+            throw new IllegalArgumentException("Header value cannot be null.");
+        }
+        headers.put(header, value);
+        return this;
+    }
 
     /**
      * Set the url of the Request. Validity of the url is checked in {@link RequestBuilder#build()}.
@@ -64,6 +90,6 @@ public class RequestBuilder {
         } else if (requestMethod == null) {
             throw new IllegalStateException("requestMethod is required.");
         }
-        return new Request(url, requestMethod, requestBody);
+        return new Request(url, requestMethod, requestBody, headers);
     }
 }

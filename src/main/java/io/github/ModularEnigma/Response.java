@@ -1,31 +1,25 @@
 package io.github.ModularEnigma;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import java.net.http.HttpResponse;
+import java.util.List;
+import java.util.Map;
 
 public class Response {
-    private final JSONObject responseJSON;
+    private final String body;
     private final int statusCode;
+    private final Map<String, List<String>> headers;
 
     public Response(HttpResponse<String> response) {
-        JSONParser jsonParser = new JSONParser();
-        try {
-            responseJSON = (JSONObject)jsonParser.parse(response.body());
-        } catch (ParseException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Response could not be parsed to JSON: " + response.body());
-        }
+        this.body = response.body();
         this.statusCode = response.statusCode();
+        this.headers = response.headers().map();
     }
 
     /**
      * Gets the body of the response. May be empty
      */
-    public JSONObject getBody() {
-        return responseJSON;
+    public String getBody() {
+        return body;
     }
 
     /**
@@ -33,5 +27,12 @@ public class Response {
      */
     public int getStatusCode() {
         return statusCode;
+    }
+
+    /**
+     * Gets the response headers
+     */
+    public Map<String, List<String>> getHeaders() {
+        return headers;
     }
 }

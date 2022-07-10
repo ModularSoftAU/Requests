@@ -5,12 +5,14 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 public class Request {
     private final String url;
     private final URI uri;
     private final Method requestMethod;
     private final String requestBody;
+    private final Map<String, String> headers;
 
     public enum Method {
         GET, POST // Add others if desired
@@ -20,7 +22,7 @@ public class Request {
         return new RequestBuilder();
     }
 
-    public Request(String url, Method requestMethod, String requestBody) {
+    public Request(String url, Method requestMethod, String requestBody, Map<String, String> headers) {
         if (url == null) {
             throw new IllegalArgumentException("URL cannot be null");
         } else if (requestMethod == null) {
@@ -30,9 +32,10 @@ public class Request {
         try {
             this.uri = URI.create(url);
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("URI is not valid as per RFC 2396");
+            throw new IllegalArgumentException("URI is not valid as per RFC 2396");
         }
 
+        this.headers = headers;
         this.url = url;
         this.requestMethod = requestMethod;
         this.requestBody = requestBody;
@@ -51,7 +54,12 @@ public class Request {
                 .header("Accept", "application/json")
                 .header("Content-Type", "application/json");
 
-        // Include the body of the Request
+        // Include additional headers if added
+        for (Map.Entry<String,String> header : headers.entrySet()) {
+            builder = builder.header(header.getKey(), header.getValue());
+        }
+
+            // Include the body of the Request
         switch (requestMethod) {
             case POST -> builder.POST(HttpRequest.BodyPublishers.ofString(requestBody));
             case GET -> builder.GET();
@@ -60,12 +68,13 @@ public class Request {
         // Send the request and listen for a response
         HttpRequest request = builder.build();
         HttpClient client = HttpClient.newHttpClient();
+        HttpResponse<String> httpResponse;
         try {
-            return new Response(client.send(request, HttpResponse.BodyHandlers.ofString()));
+            httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Exception raised during API call.");
+            throw new RuntimeException("Exception raised while sending request.");
         }
+        return new Response(httpResponse);
     }
 
     @Override
