@@ -13,6 +13,7 @@ public class Request {
     private final Method requestMethod;
     private final String requestBody;
     private final Map<String, String> headers;
+    private static final HttpClient client = HttpClient.newHttpClient();
 
     public enum Method {
         GET, POST // Add others if desired
@@ -67,7 +68,6 @@ public class Request {
 
         // Send the request and listen for a response
         HttpRequest request = builder.build();
-        HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> httpResponse;
         try {
             httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
