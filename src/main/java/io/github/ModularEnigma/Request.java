@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Map;
 
 public class Request {
@@ -13,6 +14,7 @@ public class Request {
     private final Method requestMethod;
     private final String requestBody;
     private final Map<String, String> headers;
+    private final Duration timeout;
     private static final HttpClient client = HttpClient.newHttpClient();
 
     public enum Method {
@@ -24,6 +26,10 @@ public class Request {
     }
 
     public Request(String url, Method requestMethod, String requestBody, Map<String, String> headers) {
+        this(url, requestMethod, requestBody, headers, null);
+    }
+
+    public Request(String url, Method requestMethod, String requestBody, Map<String, String> headers, Duration timeout) {
         if (url == null) {
             throw new IllegalArgumentException("URL cannot be null");
         } else if (requestMethod == null) {
@@ -40,6 +46,7 @@ public class Request {
         this.url = url;
         this.requestMethod = requestMethod;
         this.requestBody = requestBody;
+        this.timeout = timeout;
     }
 
     /**
@@ -54,6 +61,10 @@ public class Request {
                 .uri(uri)
                 .header("Accept", "application/json")
                 .header("Content-Type", "application/json");
+
+        if (timeout != null) {
+            builder = builder.timeout(timeout);
+        }
 
         // Include additional headers if added
         for (Map.Entry<String,String> header : headers.entrySet()) {
