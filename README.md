@@ -75,7 +75,7 @@ Response response = Request.builder()
         .execute();
 ```
 
-When a timeout is set and the server does not respond in time, `execute()` throws a `RuntimeException` wrapping a `java.net.http.HttpTimeoutException`. Without a timeout, the request blocks until the OS-level socket timeout fires (which can be several minutes).
+When a per-request timeout is configured and the server does not respond in time, `execute()` throws a `RuntimeException` wrapping a `java.net.http.HttpTimeoutException`. Without a timeout, `java.net.http.HttpClient.send()` has no guaranteed deadline and the call may block indefinitely; it is recommended to always configure a request timeout to avoid hung requests.
 
 ### Reading the response
 
