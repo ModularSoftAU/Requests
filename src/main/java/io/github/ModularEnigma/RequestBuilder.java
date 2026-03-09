@@ -1,5 +1,6 @@
 package io.github.ModularEnigma;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,6 +8,7 @@ public class RequestBuilder {
     private String url;
     private Request.Method requestMethod;
     private String requestBody;
+    private Duration timeout;
     private final Map<String, String> headers;
 
     public RequestBuilder() {
@@ -77,6 +79,24 @@ public class RequestBuilder {
     }
 
     /**
+     * Sets a timeout for the request. If the server does not respond within this duration,
+     * the request will throw a {@link java.net.http.HttpTimeoutException}.
+     *
+     * @param timeout The maximum time to wait for a response
+     * @return {@link RequestBuilder}
+     * @throws IllegalArgumentException If timeout is null or non-positive
+     */
+    public RequestBuilder setTimeout(Duration timeout) {
+        if (timeout == null) {
+            throw new IllegalArgumentException("timeout cannot be null.");
+        } else if (timeout.isNegative() || timeout.isZero()) {
+            throw new IllegalArgumentException("timeout must be positive.");
+        }
+        this.timeout = timeout;
+        return this;
+    }
+
+    /**
      * Builds the {@link Request} object if the {@link RequestBuilder} has been given enough
      * information to do so.
      *
@@ -90,6 +110,6 @@ public class RequestBuilder {
         } else if (requestMethod == null) {
             throw new IllegalStateException("requestMethod is required.");
         }
-        return new Request(url, requestMethod, requestBody, headers);
+        return new Request(url, requestMethod, requestBody, headers, timeout);
     }
 }

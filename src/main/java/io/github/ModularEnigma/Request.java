@@ -2,9 +2,11 @@ package io.github.ModularEnigma;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpTimeoutException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Map;
 
 public class Request {
@@ -13,6 +15,7 @@ public class Request {
     private final Method requestMethod;
     private final String requestBody;
     private final Map<String, String> headers;
+    private final Duration timeout;
     private static final HttpClient client = HttpClient.newHttpClient();
 
     public enum Method {
@@ -24,6 +27,10 @@ public class Request {
     }
 
     public Request(String url, Method requestMethod, String requestBody, Map<String, String> headers) {
+        this(url, requestMethod, requestBody, headers, null);
+    }
+
+    public Request(String url, Method requestMethod, String requestBody, Map<String, String> headers, Duration timeout) {
         if (url == null) {
             throw new IllegalArgumentException("URL cannot be null");
         } else if (requestMethod == null) {
@@ -36,10 +43,15 @@ public class Request {
             throw new IllegalArgumentException("URI is not valid as per RFC 2396");
         }
 
+        if (timeout != null && (timeout.isNegative() || timeout.isZero())) {
+            throw new IllegalArgumentException("timeout must be positive.");
+        }
+
         this.headers = headers;
         this.url = url;
         this.requestMethod = requestMethod;
         this.requestBody = requestBody;
+        this.timeout = timeout;
     }
 
     /**
@@ -54,6 +66,10 @@ public class Request {
                 .uri(uri)
                 .header("Accept", "application/json")
                 .header("Content-Type", "application/json");
+
+        if (timeout != null) {
+            builder = builder.timeout(timeout);
+        }
 
         // Include additional headers if added
         for (Map.Entry<String,String> header : headers.entrySet()) {
@@ -71,8 +87,13 @@ public class Request {
         HttpResponse<String> httpResponse;
         try {
             httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("Exception raised while sending request.");
+        } catch (HttpTimeoutException e) {
+            throw new RuntimeException("Request timed out.", e);
+        } catch (IOException e) {
+            throw new RuntimeException("I/O error while sending request.", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Request interrupted.", e);
         }
         return new Response(httpResponse);
     }
