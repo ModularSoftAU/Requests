@@ -16,11 +16,11 @@ Add the dependency to your `pom.xml`:
 <dependency>
     <groupId>io.github.ModularEnigma</groupId>
     <artifactId>Requests</artifactId>
-    <version>{$version}</version>
+    <version>x.y.z</version>
 </dependency>
 ```
 
-Replace `{$version}` with the version shown in the badge above. For other build tools (Gradle, sbt, etc.) see the [Maven Central Repository](https://search.maven.org/artifact/io.github.ModularEnigma/Requests).
+Replace `x.y.z` with the version shown in the badge above. For other build tools (Gradle, sbt, etc.) see the [Maven Central Repository](https://search.maven.org/artifact/io.github.ModularEnigma/Requests).
 
 ## Usage
 
@@ -60,7 +60,7 @@ Response response = Request.builder()
         .execute();
 ```
 
-`Accept: application/json` and `Content-Type: application/json` are set automatically. Any headers added via `addHeader` are merged on top.
+`Accept: application/json` and `Content-Type: application/json` are set automatically. Headers added via `addHeader` are appended using `HttpRequest.Builder.header(...)`, which adds an additional header value rather than replacing any existing one. This means adding `Accept` or `Content-Type` via `addHeader` will result in duplicate header values, not an override; avoid re-adding those headers if you intend to change the defaults.
 
 ### Timeout
 

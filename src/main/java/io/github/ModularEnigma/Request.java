@@ -2,6 +2,7 @@ package io.github.ModularEnigma;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpTimeoutException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -40,6 +41,10 @@ public class Request {
             this.uri = URI.create(url);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("URI is not valid as per RFC 2396");
+        }
+
+        if (timeout != null && (timeout.isNegative() || timeout.isZero())) {
+            throw new IllegalArgumentException("timeout must be positive.");
         }
 
         this.headers = headers;
@@ -82,8 +87,13 @@ public class Request {
         HttpResponse<String> httpResponse;
         try {
             httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("Exception raised while sending request.");
+        } catch (HttpTimeoutException e) {
+            throw new RuntimeException("Request timed out.", e);
+        } catch (IOException e) {
+            throw new RuntimeException("I/O error while sending request.", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Request interrupted.", e);
         }
         return new Response(httpResponse);
     }
